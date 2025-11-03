@@ -1,5 +1,6 @@
 #pragma once
-
+#include <bits/stdc++.h>
+using namespace std;
 #include <QDialog>
 #include <QLineEdit>
 #include <QPushButton>
@@ -10,8 +11,6 @@
 #include <QHBoxLayout>
 #include <QList>
 #include <QPair>
-#include <vector>
-#include <tuple>
 
 namespace graphviso {
 namespace gui {
@@ -26,8 +25,8 @@ public:
     explicit GraphInputDialog(QWidget* parent = nullptr);
 
     // Accessors for the collected data
-    std::vector<DialogNode> nodes() const;
-    std::vector<DialogEdge> edges() const;
+    vector<DialogNode> nodes() const;
+    vector<DialogEdge> edges() const;
 
 private slots:
     void addNode();
@@ -54,8 +53,8 @@ private:
     QPushButton* createNodesBtn_ = nullptr;
     QCheckBox* directedCheck_ = nullptr;
 
-    std::vector<DialogNode> nodes_;
-    std::vector<DialogEdge> edges_;
+    vector<DialogNode> nodes_;
+    vector<DialogEdge> edges_;
     bool directed_ = false;
 
 public:

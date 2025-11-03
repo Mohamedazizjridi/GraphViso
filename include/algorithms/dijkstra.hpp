@@ -1,6 +1,5 @@
 #pragma once
-#include <vector>
-#include <unordered_map>
+#include <bits/stdc++.h>
 #include "../core/graph.hpp"
 using namespace std;
 namespace graphviso {

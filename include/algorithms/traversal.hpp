@@ -1,15 +1,14 @@
 #pragma once
-
-#include <vector>
+#include <bits/stdc++.h>
 #include <functional>
 #include "../core/graph.hpp"
-
+using namespace std;
 namespace graphviso {
 namespace algorithms {
 
 class GraphTraversal {
 public:
-    using VisitCallback = std::function<void(const Node&)>;
+    using VisitCallback = function<void(const Node&)>;
     
     virtual void traverse(const Graph& graph, int startNodeId, VisitCallback callback) = 0;
     virtual ~GraphTraversal() = default;

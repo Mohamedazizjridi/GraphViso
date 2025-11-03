@@ -1,5 +1,6 @@
 #pragma once
-
+#include <bits/stdc++.h>
+using namespace std;
 #include <QMainWindow>
 #include <QGraphicsScene>
 #include <QGraphicsView>
@@ -35,14 +36,14 @@ private:
     
     void setupGraphicsView();
     // Build a graph from dialog input
-    void buildGraphFromInput(const std::vector<graphviso::gui::DialogNode>& nodes,
-                             const std::vector<graphviso::gui::DialogEdge>& edges);
+    void buildGraphFromInput(const vector<graphviso::gui::DialogNode>& nodes,
+                             const vector<graphviso::gui::DialogEdge>& edges);
     
     QGraphicsScene* scene_;
     QGraphicsView* view_;
-    std::unique_ptr<Graph> graph_;
+    unique_ptr<Graph> graph_;
     QLabel* statusLabel_{nullptr};
-    std::vector<int> lastDfsOrder_; // Store last DFS order
+    vector<int> lastDfsOrder_; // Store last DFS order
 };
 
 } // namespace gui

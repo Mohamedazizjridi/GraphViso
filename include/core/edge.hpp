@@ -1,23 +1,22 @@
 #pragma once
-
-#include <vector>
+#include <bits/stdc++.h>
 #include <memory>
 #include "node.hpp"
-
+using namespace std;
 namespace graphviso {
 
 class Edge {
 public:
-    Edge(std::shared_ptr<Node> source, std::shared_ptr<Node> target, double weight = 1.0);
+    Edge(shared_ptr<Node> source, shared_ptr<Node> target, double weight = 1.0);
     
-    std::shared_ptr<Node> getSource() const;
-    std::shared_ptr<Node> getTarget() const;
+    shared_ptr<Node> getSource() const;
+    shared_ptr<Node> getTarget() const;
     double getWeight() const;
     void setWeight(double weight);
 
 private:
-    std::shared_ptr<Node> source_;
-    std::shared_ptr<Node> target_;
+    shared_ptr<Node> source_;
+    shared_ptr<Node> target_;
     double weight_;
 };
 

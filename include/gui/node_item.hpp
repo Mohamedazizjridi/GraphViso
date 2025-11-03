@@ -1,5 +1,6 @@
 #pragma once
-
+#include <bits/stdc++.h>
+using namespace std;
 #include <QGraphicsItem>
 #include "../core/node.hpp"
 
@@ -8,12 +9,12 @@ namespace gui {
 
 class NodeItem : public QGraphicsItem {
 public:
-    explicit NodeItem(std::shared_ptr<Node> node, QGraphicsItem* parent = nullptr);
+    explicit NodeItem(shared_ptr<Node> node, QGraphicsItem* parent = nullptr);
     
     QRectF boundingRect() const override;
     void paint(QPainter* painter, const QStyleOptionGraphicsItem* option, QWidget* widget) override;
     
-    std::shared_ptr<Node> getNode() const;
+    shared_ptr<Node> getNode() const;
     enum class State { Normal, Current, Visited, BFSCurrent, BFSVisited, DCurrent, DVisited };
     void setState(State s);
     State state() const;
@@ -24,7 +25,7 @@ protected:
     void mouseReleaseEvent(QGraphicsSceneMouseEvent* event) override;
 
 private:
-    std::shared_ptr<Node> node_;
+    shared_ptr<Node> node_;
     State state_ = State::Normal;
 };
 

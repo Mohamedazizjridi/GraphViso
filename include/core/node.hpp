@@ -1,8 +1,7 @@
 #pragma once
-
-#include <vector>
+#include <bits/stdc++.h>
 #include <memory>
-
+using namespace std;
 namespace graphviso {
 
 class Node {
