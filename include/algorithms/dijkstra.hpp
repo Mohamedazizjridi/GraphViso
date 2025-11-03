@@ -1,14 +1,13 @@
 #pragma once
-
 #include <vector>
 #include <unordered_map>
 #include "../core/graph.hpp"
-
+using namespace std;
 namespace graphviso {
 namespace algorithms {
 
 struct PathInfo {
-    std::vector<int> path;
+    vector<int> path;
     double distance;
 };
 
@@ -17,8 +16,8 @@ public:
     PathInfo findShortestPath(const Graph& graph, int startNodeId, int endNodeId);
     
 private:
-    std::unordered_map<int, double> distances_;
-    std::unordered_map<int, int> previous_;
+       unordered_map<int, double> distances_;
+        unordered_map<int, int> previous_;
 };
 
 } // namespace algorithms
