@@ -2,8 +2,8 @@
 #include <QLabel>
 #include <QFormLayout>
 #include <QMessageBox>
-#include <cmath>
-
+#include <bits/stdc++.h>
+using namespace std;
 using namespace graphviso::gui;
 
 GraphInputDialog::GraphInputDialog(QWidget* parent)
@@ -12,9 +12,6 @@ GraphInputDialog::GraphInputDialog(QWidget* parent)
     setWindowTitle("Build Graph");
 
     auto mainLayout = new QVBoxLayout(this);
-
-    // Node inputs
-    // Quick node creation
     auto quickGroup = new QHBoxLayout();
     quickGroup->addWidget(new QLabel("Nodes:"));
     nodeCountSpin_ = new QSpinBox();
@@ -31,7 +28,6 @@ GraphInputDialog::GraphInputDialog(QWidget* parent)
     connect(createNodesBtn_, &QPushButton::clicked, this, [this]() {
         int count = nodeCountSpin_->value();
         nodes_.clear();
-        // place nodes in a circle
         double radius = 150.0;
         double cx = 0, cy = 0;
         for (int i = 0; i < count; ++i) {
@@ -45,8 +41,6 @@ GraphInputDialog::GraphInputDialog(QWidget* parent)
     });
 
     mainLayout->addLayout(quickGroup);
-
-    // Edge inputs (select from created nodes)
     auto edgeGroup = new QVBoxLayout();
     edgeGroup->addWidget(new QLabel("Add Edge"));
 
@@ -62,8 +56,6 @@ GraphInputDialog::GraphInputDialog(QWidget* parent)
     addEdgeBtn_ = new QPushButton("Add Edge");
     edgeGroup->addWidget(addEdgeBtn_);
     connect(addEdgeBtn_, &QPushButton::clicked, this, &GraphInputDialog::addEdge);
-
-    // When nodes are created, populate combo boxes
     connect(createNodesBtn_, &QPushButton::clicked, this, [this]() {
         edgeSrcCombo_->clear();
         edgeTgtCombo_->clear();
@@ -75,8 +67,6 @@ GraphInputDialog::GraphInputDialog(QWidget* parent)
     });
 
     mainLayout->addLayout(edgeGroup);
-
-    // Done button
     doneBtn_ = new QPushButton("Done");
     connect(doneBtn_, &QPushButton::clicked, this, &GraphInputDialog::accept);
     mainLayout->addWidget(doneBtn_);
@@ -107,8 +97,6 @@ void GraphInputDialog::addNode() {
         QMessageBox::warning(this, "Invalid Position", "X and Y must be numbers");
         return;
     }
-
-    // Check duplicate
     for (const auto& n : nodes_) if (n.id == id) {
         QMessageBox::warning(this, "Duplicate ID", "A node with this ID already exists");
         return;
@@ -125,14 +113,11 @@ void GraphInputDialog::addEdge() {
     int tgt = edgeTgtCombo_->currentText().toInt();
     double w = edgeWeightEdit_->text().toDouble(&okW);
     if (!okW) w = 1.0;
-
-    // Ensure source and target exist in nodes_
     auto exists = [&](int id){ for (const auto& n: nodes_) if (n.id == id) return true; return false; };
     if (!exists(src) || !exists(tgt)) {
         QMessageBox::warning(this, "Unknown Node", "Source and target nodes must be added before creating an edge");
         return;
     }
-
     edges_.push_back(DialogEdge{ src, tgt, w });
     edgeWeightEdit_->clear();
 }
