@@ -1,15 +1,16 @@
 #include "core/edge.hpp"
-
+#include<bits/stdc++.h>
+using namespace std;
 namespace graphviso {
 
-Edge::Edge(std::shared_ptr<Node> source, std::shared_ptr<Node> target, double weight)
+Edge::Edge(shared_ptr<Node> source, shared_ptr<Node> target, double weight)
     : source_(source), target_(target), weight_(weight) {}
 
-std::shared_ptr<Node> Edge::getSource() const {
+shared_ptr<Node> Edge::getSource() const {
     return source_;
 }
 
-std::shared_ptr<Node> Edge::getTarget() const {
+shared_ptr<Node> Edge::getTarget() const {
     return target_;
 }
 
