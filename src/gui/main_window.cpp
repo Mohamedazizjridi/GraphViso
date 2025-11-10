@@ -19,7 +19,7 @@
 #include <QIODevice>
 #include <chrono>
 #include <thread>
-
+using namespace std;
 namespace graphviso {
 namespace gui {
 
@@ -33,8 +33,6 @@ MainWindow::MainWindow(QWidget* parent)
 void MainWindow::setupUI() {
     setWindowTitle("Graphviso - Graph Visualization");
     resize(800, 600);
-    
-    // Create a main widget and layout
     auto mainWidget = new QWidget(this);
     auto mainLayout = new QVBoxLayout(mainWidget);
     
@@ -45,8 +43,6 @@ void MainWindow::setupUI() {
     view_->setRenderHint(QPainter::Antialiasing);
     view_->setDragMode(QGraphicsView::RubberBandDrag);
     view_->setViewportUpdateMode(QGraphicsView::FullViewportUpdate);
-    
-    // Add status label
     statusLabel_ = new QLabel("Ready", this);
     statusLabel_->setAlignment(Qt::AlignCenter);
     
@@ -95,8 +91,6 @@ void MainWindow::setupToolbar() {
 void MainWindow::newGraph() {
     graph_->clear();
     scene_->clear();
-
-    // Create nodes
     auto node1Data = std::make_shared<Node>(1, -100, 0);
     auto node2Data = std::make_shared<Node>(2, 0, 100);
     auto node3Data = std::make_shared<Node>(3, 100, 0);
@@ -112,8 +106,7 @@ void MainWindow::newGraph() {
     scene_->addItem(node1);
     scene_->addItem(node2);
     scene_->addItem(node3);
-
-    // Create edges
+    
     auto edge1Data = std::make_shared<Edge>(node1Data, node2Data);
     auto edge2Data = std::make_shared<Edge>(node2Data, node3Data);
     auto edge3Data = std::make_shared<Edge>(node3Data, node1Data);
@@ -135,8 +128,7 @@ void MainWindow::openGraph() {
     
     try {
         graph_->load(filename.toStdString());
-        // TODO: Update visualization
-    } catch (const std::exception& e) {
+    } catch (const exception& e) {
         QMessageBox::critical(this, "Error", QString("Failed to load graph: %1").arg(e.what()));
     }
 }
@@ -144,25 +136,22 @@ void MainWindow::openGraph() {
 void MainWindow::buildGraph() {
     GraphInputDialog dlg(this);
     if (dlg.exec() == QDialog::Accepted) {
-        // Recreate graph with directed flag
-        graph_ = std::make_unique<Graph>(dlg.isDirected());
+        graph_ = make_unique<Graph>(dlg.isDirected());
         auto nodes = dlg.nodes();
         auto edges = dlg.edges();
         buildGraphFromInput(nodes, edges);
     }
 }
 
-void MainWindow::buildGraphFromInput(const std::vector<graphviso::gui::DialogNode>& nodes,
-                                    const std::vector<graphviso::gui::DialogEdge>& edges) {
+void MainWindow::buildGraphFromInput(const vector<graphviso::gui::DialogNode>& nodes,
+                                    const vector<graphviso::gui::DialogEdge>& edges) {
     graph_->clear();
     scene_->clear();
-
-    // Map user-provided ID -> actual Graph node id
-    std::unordered_map<int, int> userToGraphId;
-    std::unordered_map<int, NodeItem*> nodeItemMap;
+    unordered_map<int, int> userToGraphId;
+    unordered_map<int, NodeItem*> nodeItemMap;
 
     for (const auto& n : nodes) {
-        auto created = graph_->addNode(n.x, n.y); // Graph assigns real ID
+        auto created = graph_->addNode(n.x, n.y); 
         userToGraphId[n.id] = created->getId();
         auto ni = new NodeItem(created);
         ni->setPos(n.x, n.y);
@@ -177,12 +166,10 @@ void MainWindow::buildGraphFromInput(const std::vector<graphviso::gui::DialogNod
         int realSrc = sit->second;
         int realTgt = tit->second;
         graph_->addEdge(realSrc, realTgt, e.weight);
-        // find NodeItem pointers to create EdgeItem visual
         NodeItem* srcItem = nodeItemMap[e.source];
         NodeItem* tgtItem = nodeItemMap[e.target];
         if (srcItem && tgtItem) {
-            // Create EdgeItem using underlying Edge object from graph
-            auto ed = std::make_shared<Edge>(srcItem->getNode(), tgtItem->getNode(), e.weight);
+            auto ed = make_shared<Edge>(srcItem->getNode(), tgtItem->getNode(), e.weight);
             auto ei = new EdgeItem(ed);
             scene_->addItem(ei);
         }
@@ -197,32 +184,25 @@ void MainWindow::saveGraph() {
     
     try {
         graph_->save(filename.toStdString());
-    } catch (const std::exception& e) {
+    } catch (const exception& e) {
         QMessageBox::critical(this, "Error", QString("Failed to save graph: %1").arg(e.what()));
     }
 }
 
 void MainWindow::runBFS() {
-    // Ensure the underlying graph has nodes
     auto nodes = graph_->getNodes();
     if (nodes.empty()) {
         QMessageBox::information(this, "BFS", "Graph is empty. Create nodes first.");
         return;
     }
-
-    // Build mapping from node id -> NodeItem (visual)
-    std::unordered_map<int, NodeItem*> idToNode;
+   unordered_map<int, NodeItem*> idToNode;
     for (QGraphicsItem* item : scene_->items()) {
         if (auto ni = dynamic_cast<NodeItem*>(item)) {
             idToNode[ni->getNode()->getId()] = ni;
             ni->setState(NodeItem::State::Normal);
         }
     }
-
-    // Clear previous BFS order
     lastDfsOrder_.clear();
-
-    // Run BFS across all connected components
     algorithms::BFS bfs;
     std::vector<int> order;
     std::unordered_set<int> visitedIds;
@@ -243,31 +223,22 @@ void MainWindow::runBFS() {
         QMessageBox::warning(this, "BFS", "No nodes visited by BFS.");
         return;
     }
-
-    // Store the order for later saving (reuse lastDfsOrder_ storage)
     lastDfsOrder_ = order;
-
-    // Animate highlights using QTimer singleShot: mark each visited node as BFSCurrent, then BFSVisited
-    int delayMs = 1000; // 1 second between steps for visibility
+    int delayMs = 1000; 
     for (size_t i = 0; i < order.size(); ++i) {
         int nodeId = order[i];
         QTimer::singleShot(static_cast<int>(i) * delayMs, this,
             [this, nodeId, i, total = order.size(), idToNode, order = order, delayMs]() {
-            // Set previous node to BFSVisited state if not the first node
             if (i > 0) {
                 int prevId = order[i-1];
                 if (auto prevNode = idToNode.at(prevId)) {
                     prevNode->setState(NodeItem::State::BFSVisited);
                 }
             }
-
-            // Set current node to BFSCurrent state (green)
             if (auto currentNode = idToNode.at(nodeId)) {
                 currentNode->setState(NodeItem::State::BFSCurrent);
                 statusLabel_->setText(QString("BFS: Visiting node %1 (%2 of %3)").arg(nodeId).arg(i + 1).arg(total));
             }
-
-            // If this is the last node, set it to BFSVisited after a delay
             if (i == total - 1) {
                 QTimer::singleShot(delayMs, this, [this, nodeId, idToNode]() {
                     if (auto lastNode = idToNode.at(nodeId)) {
@@ -281,14 +252,11 @@ void MainWindow::runBFS() {
 }
 
 void MainWindow::runDFS() {
-    // Ensure the underlying graph has nodes
     auto nodes = graph_->getNodes();
     if (nodes.empty()) {
         QMessageBox::information(this, "DFS", "Graph is empty. Create nodes first.");
         return;
     }
-
-    // Build mapping from node id -> NodeItem (visual)
     std::unordered_map<int, NodeItem*> idToNode;
     for (QGraphicsItem* item : scene_->items()) {
         if (auto ni = dynamic_cast<NodeItem*>(item)) {
@@ -296,16 +264,10 @@ void MainWindow::runDFS() {
             ni->setState(NodeItem::State::Normal);
         }
     }
-
-    // Clear previous DFS order
     lastDfsOrder_.clear();
-
-    // Run DFS on the actual graph_ (core::Graph) across all connected components
     algorithms::DFS dfs;
-    std::vector<int> order;
-    std::unordered_set<int> visitedIds;
-
-    // For every node in the graph, start a DFS if it hasn't been visited yet.
+    vector<int> order;
+    unordered_set<int> visitedIds;
     for (const auto& nptr : nodes) {
         int nid = nptr->getId();
         if (visitedIds.count(nid)) continue;
@@ -322,32 +284,22 @@ void MainWindow::runDFS() {
         QMessageBox::warning(this, "DFS", "No nodes visited by DFS.");
         return;
     }
-
-    // Store the order for later saving
     lastDfsOrder_ = order;
-
-    // Animate highlights using QTimer singleShot: mark each visited node as Current, then Visited
-    int delayMs = 1000; // 1 second between steps for better visibility
+    int delayMs = 1000;
     for (size_t i = 0; i < order.size(); ++i) {
         int nodeId = order[i];
-        // Capture all needed variables by value except 'this'
         QTimer::singleShot(static_cast<int>(i) * delayMs, this, 
             [this, nodeId, i, total = order.size(), idToNode, order = order, delayMs]() {
-            // Set previous node to Visited state if not the first node
             if (i > 0) {
                 int prevId = order[i-1];
                 if (auto prevNode = idToNode.at(prevId)) {
                     prevNode->setState(NodeItem::State::Visited);
                 }
             }
-
-            // Set current node to Current state (yellow)
             if (auto currentNode = idToNode.at(nodeId)) {
                 currentNode->setState(NodeItem::State::Current);
                 statusLabel_->setText(QString("DFS: Visiting node %1 (%2 of %3)").arg(nodeId).arg(i + 1).arg(total));
             }
-
-            // If this is the last node, set it to Visited after a delay
             if (i == total - 1) {
                 QTimer::singleShot(delayMs, this, 
                     [this, nodeId, idToNode]() {
@@ -361,10 +313,7 @@ void MainWindow::runDFS() {
     }
     }
 
-// loadDFS was removed per UX request: saving is handled by saveDFSOrder() and replay isn't needed.
-
 void MainWindow::runDijkstra() {
-    // Ask user to select start and end nodes
     auto nodes = graph_->getNodes();
     if (nodes.empty()) {
         QMessageBox::information(this, "Dijkstra", "Graph is empty. Create nodes first.");
@@ -382,11 +331,9 @@ void MainWindow::runDijkstra() {
 
     int startId = startStr.toInt();
     int endId = endStr.toInt();
-
-    // Build adjacency list and visual mapping
-    std::unordered_map<int, std::vector<std::pair<int,double>>> adj;
-    std::unordered_map<int, NodeItem*> idToNode;
-    std::vector<EdgeItem*> edgeItems;
+    unordered_map<int, vector<pair<int,double>>> adj;
+    unordered_map<int, NodeItem*> idToNode;
+    vector<EdgeItem*> edgeItems;
     for (QGraphicsItem* it : scene_->items()) {
         if (auto ei = dynamic_cast<EdgeItem*>(it)) {
             edgeItems.push_back(ei);
@@ -402,29 +349,22 @@ void MainWindow::runDijkstra() {
             ni->setState(NodeItem::State::Normal);
         }
     }
+    auto dist = make_shared<std::unordered_map<int,double>>();
+    auto prev = make_shared<std::unordered_map<int,int>>();
+    unordered_set<int> visited;
 
-    // Prepare Dijkstra structures
-    auto dist = std::make_shared<std::unordered_map<int,double>>();
-    auto prev = std::make_shared<std::unordered_map<int,int>>();
-    std::unordered_set<int> visited;
-
-    const double INF = std::numeric_limits<double>::infinity();
+    const double INF = numeric_limits<double>::infinity();
     for (const auto& n : nodes) (*dist)[n->getId()] = INF;
     (*dist)[startId] = 0.0;
 
-    // Use set as priority queue (distance, id)
-    auto active = std::make_shared<std::set<std::pair<double,int>>>();
+    auto active = make_shared<set<pair<double,int>>>();
     active->insert({0.0, startId});
-
-    // Timer-based stepper
     QTimer* timer = new QTimer(this);
     connect(timer, &QTimer::timeout, this, [=]() mutable {
-        if (active->empty()) {
-            // finished, reconstruct path
+        if (active->empty(){
             timer->stop();
             timer->deleteLater();
-            // build path
-            std::vector<int> path;
+            vector<int> path;
             int cur = endId;
             if (prev->find(cur) == prev->end() && cur != startId) {
                 statusLabel_->setText("No path found.");
@@ -435,15 +375,11 @@ void MainWindow::runDijkstra() {
                 cur = (*prev)[cur];
             }
             path.push_back(startId);
-            std::reverse(path.begin(), path.end());
-
-            // Highlight path edges and nodes
+            reverse(path.begin(), path.end());
             for (size_t i = 0; i + 1 < path.size(); ++i) {
                 int a = path[i], b = path[i+1];
-                // highlight node
                 if (idToNode.count(a)) idToNode[a]->setState(NodeItem::State::DVisited);
                 if (idToNode.count(b)) idToNode[b]->setState(NodeItem::State::DVisited);
-                // highlight edge
                 for (auto ei : edgeItems) {
                     auto ed = ei->getEdge();
                     if ((ed->getSource()->getId() == a && ed->getTarget()->getId() == b) ||
@@ -461,26 +397,20 @@ void MainWindow::runDijkstra() {
         auto it = active->begin();
         auto [d, u] = *it;
         active->erase(it);
-        if (visited.count(u)) return; // already processed
+        if (visited.count(u)) return; 
         visited.insert(u);
-
-        // mark current
         if (idToNode.count(u)) idToNode[u]->setState(NodeItem::State::DCurrent);
 
-        // relax neighbors
         for (auto [v,w] : adj[u]) {
             if (visited.count(v)) continue;
             double nd = (*dist)[u] + w;
             if (nd < (*dist)[v]) {
-                // remove old entry if exists
                 if ((*dist)[v] != INF) {
                     active->erase({(*dist)[v], v});
                 }
                 (*dist)[v] = nd;
                 (*prev)[v] = u;
                 active->insert({nd, v});
-
-                // highlight the edge being relaxed briefly
                 for (auto ei : edgeItems) {
                     auto ed = ei->getEdge();
                     if ((ed->getSource()->getId() == u && ed->getTarget()->getId() == v) ||
@@ -491,8 +421,6 @@ void MainWindow::runDijkstra() {
                 }
             }
         }
-
-        // set u to visited state after processing
         if (idToNode.count(u)) idToNode[u]->setState(NodeItem::State::DVisited);
     });
 
@@ -501,7 +429,7 @@ void MainWindow::runDijkstra() {
 }
 
 void MainWindow::toggleDirected() {
-    // TODO: Implement directed/undirected toggle
+  
 }
 
 void MainWindow::saveDFSOrder() {
