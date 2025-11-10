@@ -2,15 +2,15 @@
 #include "gui/node_item.hpp"
 #include <QPainter>
 #include <QGraphicsScene>
-#include <cmath>
+#include <bits/stdc++.h>
 
 namespace graphviso {
 namespace gui {
 
-EdgeItem::EdgeItem(std::shared_ptr<Edge> edge, QGraphicsItem* parent)
+EdgeItem::EdgeItem(shared_ptr<Edge> edge, QGraphicsItem* parent)
     : QGraphicsItem(parent), edge_(edge), isHighlighted_(false)
 {
-    setZValue(-1); // Draw edges behind nodes
+    setZValue(-1);
 }
 
 QRectF EdgeItem::boundingRect() const {
@@ -34,17 +34,13 @@ void EdgeItem::paint(QPainter* painter, const QStyleOptionGraphicsItem* option, 
     
     QPointF sourcePoint(source->getX(), source->getY());
     QPointF targetPoint(target->getX(), target->getY());
-    
-    // Draw the line
     painter->setPen(QPen(isHighlighted_ ? Qt::red : Qt::black, 2));
     painter->drawLine(sourcePoint, targetPoint);
-    
-    // Draw the weight
     QPointF midPoint = (sourcePoint + targetPoint) / 2;
     painter->drawText(midPoint, QString::number(edge_->getWeight()));
 }
 
-std::shared_ptr<Edge> EdgeItem::getEdge() const {
+shared_ptr<Edge> EdgeItem::getEdge() const {
     return edge_;
 }
 
