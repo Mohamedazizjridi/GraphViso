@@ -2,7 +2,8 @@
 #include <QPainter>
 #include <QGraphicsScene>
 #include <QGraphicsSceneMouseEvent>
-
+#include <bits/stdc++.h>
+using namesapce std;
 namespace graphviso {
 namespace gui {
 
