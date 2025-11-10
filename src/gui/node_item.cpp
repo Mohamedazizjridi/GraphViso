@@ -23,31 +23,26 @@ QRectF NodeItem::boundingRect() const {
 void NodeItem::paint(QPainter* painter, const QStyleOptionGraphicsItem* option, QWidget* widget) {
     Q_UNUSED(option);
     Q_UNUSED(widget);
-    
-    // Draw node circle using state-aware color
     QColor fillColor = Qt::white;
     switch (state_) {
         case State::Normal: fillColor = Qt::white; break;
         case State::Current: fillColor = Qt::yellow; break;
-        case State::Visited: fillColor = Qt::yellow; break; // DFS visited shown as yellow
+        case State::Visited: fillColor = Qt::yellow; break;
         case State::BFSCurrent: fillColor = Qt::green; break;
-        case State::BFSVisited: fillColor = Qt::green; break; // BFS visited shown as green
-        case State::DCurrent: fillColor = QColor(0, 122, 204); break; // blue-ish
+        case State::BFSVisited: fillColor = Qt::green; break; 
+        case State::DCurrent: fillColor = QColor(0, 122, 204); break;
         case State::DVisited: fillColor = QColor(0, 102, 180); break;
     }
     painter->setBrush(fillColor);
     painter->setPen(QPen(Qt::black, 2));
     painter->drawEllipse(-15, -15, 30, 30);
-    
-    // Draw node ID
     painter->drawText(boundingRect(), Qt::AlignCenter, QString::number(node_->getId()));
 }
 
-std::shared_ptr<Node> NodeItem::getNode() const {
+shared_ptr<Node> NodeItem::getNode() const {
     return node_;
 }
 
-// New state support
 void NodeItem::setState(State s) {
     if (state_ != s) {
         state_ = s;
@@ -66,8 +61,6 @@ void NodeItem::mousePressEvent(QGraphicsSceneMouseEvent* event) {
 void NodeItem::mouseMoveEvent(QGraphicsSceneMouseEvent* event) {
     QGraphicsItem::mouseMoveEvent(event);
     node_->setPosition(pos().x(), pos().y());
-    
-    // Notify edge items to update their positions
     scene()->update();
 }
 
