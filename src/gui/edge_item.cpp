@@ -3,7 +3,7 @@
 #include <QPainter>
 #include <QGraphicsScene>
 #include <bits/stdc++.h>
-
+using namesapce std;
 namespace graphviso {
 namespace gui {
 
