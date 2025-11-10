@@ -2,15 +2,15 @@
 #include <fstream>
 #include <sstream>
 #include <stdexcept>
-#include <algorithm>
-
+#include <bits/stdc++.h>
+using namespace std;
 namespace graphviso {
 
 Graph::Graph(bool isDirected)
     : isDirected_(isDirected), nextNodeId_(0) {}
 
-std::shared_ptr<Node> Graph::addNode(double x, double y) {
-    auto node = std::make_shared<Node>(nextNodeId_++, x, y);
+shared_ptr<Node> Graph::addNode(double x, double y) {
+    auto node = make_shared<Node>(nextNodeId_++, x, y);
     nodes_[node->getId()] = node;
     return node;
 }
@@ -19,10 +19,8 @@ void Graph::removeNode(int id) {
     if (nodes_.find(id) == nodes_.end()) {
         return;
     }
-    
-    // Remove all edges connected to this node
     edges_.erase(
-        std::remove_if(edges_.begin(), edges_.end(),
+        remove_if(edges_.begin(), edges_.end(),
             [id](const std::shared_ptr<Edge>& edge) {
                 return edge->getSource()->getId() == id || 
                        edge->getTarget()->getId() == id;
@@ -39,16 +37,16 @@ void Graph::addEdge(int sourceId, int targetId, double weight) {
     auto targetIt = nodes_.find(targetId);
     
     if (sourceIt == nodes_.end() || targetIt == nodes_.end()) {
-        throw std::runtime_error("Source or target node does not exist");
+        throw  runtime_error("Source or target node does not exist");
     }
     
-    edges_.push_back(std::make_shared<Edge>(sourceIt->second, targetIt->second, weight));
+    edges_.push_back(make_shared<Edge>(sourceIt->second, targetIt->second, weight));
 }
 
 void Graph::removeEdge(int sourceId, int targetId) {
     edges_.erase(
-        std::remove_if(edges_.begin(), edges_.end(),
-            [sourceId, targetId](const std::shared_ptr<Edge>& edge) {
+        remove_if(edges_.begin(), edges_.end(),
+            [sourceId, targetId](const shared_ptr<Edge>& edge) {
                 return edge->getSource()->getId() == sourceId && 
                        edge->getTarget()->getId() == targetId;
             }
@@ -61,15 +59,15 @@ bool Graph::isDirected() const {
     return isDirected_;
 }
 
-std::vector<std::shared_ptr<Node>> Graph::getNodes() const {
-    std::vector<std::shared_ptr<Node>> result;
+vector<shared_ptr<Node>> Graph::getNodes() const {
+    vector<shared_ptr<Node>> result;
     for (const auto& pair : nodes_) {
         result.push_back(pair.second);
     }
     return result;
 }
 
-std::vector<std::shared_ptr<Edge>> Graph::getEdges() const {
+vector<shared_ptr<Edge>> Graph::getEdges() const {
     return edges_;
 }
 
@@ -79,23 +77,17 @@ void Graph::clear() {
     nextNodeId_ = 0;
 }
 
-void Graph::save(const std::string& filename) const {
-    std::ofstream file(filename);
+void Graph::save(const string& filename) const {
+    ofstream file(filename);
     if (!file) {
-        throw std::runtime_error("Could not open file for writing");
+        throw runtime_error("Could not open file for writing");
     }
-    
-    // Write header
     file << (isDirected_ ? "directed" : "undirected") << "\n";
-    
-    // Write nodes
     file << nodes_.size() << "\n";
     for (const auto& pair : nodes_) {
         const auto& node = pair.second;
         file << node->getId() << " " << node->getX() << " " << node->getY() << "\n";
     }
-    
-    // Write edges
     file << edges_.size() << "\n";
     for (const auto& edge : edges_) {
         file << edge->getSource()->getId() << " " 
@@ -104,32 +96,25 @@ void Graph::save(const std::string& filename) const {
     }
 }
 
-void Graph::load(const std::string& filename) {
-    std::ifstream file(filename);
+void Graph::load(const string& filename) {
+    ifstream file(filename);
     if (!file) {
-        throw std::runtime_error("Could not open file for reading");
+        throw runtime_error("Could not open file for reading");
     }
-    
     clear();
-    
-    // Read header
-    std::string type;
+    string type;
     file >> type;
     isDirected_ = (type == "directed");
-    
-    // Read nodes
     int nodeCount;
     file >> nodeCount;
     for (int i = 0; i < nodeCount; ++i) {
         int id;
         double x, y;
         file >> id >> x >> y;
-        auto node = std::make_shared<Node>(id, x, y);
+        auto node = make_shared<Node>(id, x, y);
         nodes_[id] = node;
         nextNodeId_ = std::max(nextNodeId_, id + 1);
     }
-    
-    // Read edges
     int edgeCount;
     file >> edgeCount;
     for (int i = 0; i < edgeCount; ++i) {
